@@ -1,4 +1,4 @@
-0 girls_complaince
-1 girls_noncompliance
-2 boys_compliance
-3 boys_noncomplaince
+0 Girls complaince
+1 Girls non-complaince
+2 Boys complaince
+3 Boys non-complaince

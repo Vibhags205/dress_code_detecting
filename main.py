@@ -20,8 +20,52 @@ def load_labels(labels_path: str) -> list[str]:
     return labels
 
 
+def _is_hdf5_signature(header: bytes) -> bool:
+    return header.startswith(b"\x89HDF\r\n\x1a\n")
+
+
+def _is_zip_signature(header: bytes) -> bool:
+    return header.startswith(b"PK\x03\x04")
+
+
+def load_model_from_path(model_path: str) -> tf.keras.Model:
+    if os.path.isdir(model_path):
+        return tf.keras.models.load_model(model_path, compile=False)
+
+    with open(model_path, "rb") as model_file:
+        header = model_file.read(8)
+
+    if _is_hdf5_signature(header) or _is_zip_signature(header):
+        return tf.keras.models.load_model(model_path, compile=False)
+
+    raise ValueError(
+        "Model file does not look like a valid HDF5 or .keras archive. "
+        "Re-export the model as HDF5 (.h5) or Keras (.keras) and update the path."
+    )
+
+
+def resolve_model_path() -> str:
+    explicit_path = os.environ.get("MODEL_PATH")
+    if explicit_path:
+        return explicit_path
+
+    candidates = [
+        "model/keras_model.h5",
+        "model/keras_model.keras",
+        "model/saved_model",
+    ]
+    for candidate in candidates:
+        if os.path.exists(candidate):
+            return candidate
+
+    raise FileNotFoundError(
+        "No model file found. Set MODEL_PATH or place a model at model/keras_model.h5, "
+        "model/keras_model.keras, or model/saved_model."
+    )
+
+
 # 1. Load the Keras model
-model = tf.keras.models.load_model("model/keras_model.h5", compile=False)
+model = load_model_from_path(resolve_model_path())
 input_shape = model.input_shape
 height = int(input_shape[1])
 width = int(input_shape[2])
