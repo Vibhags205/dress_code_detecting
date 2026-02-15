@@ -53,6 +53,7 @@ def resolve_model_path() -> str:
         "model/keras_model.h5",
         "model/keras_model.keras",
         "model/saved_model",
+        "model/model.savedmodel",
     ]
     for candidate in candidates:
         if os.path.exists(candidate):
@@ -60,7 +61,7 @@ def resolve_model_path() -> str:
 
     raise FileNotFoundError(
         "No model file found. Set MODEL_PATH or place a model at model/keras_model.h5, "
-        "model/keras_model.keras, or model/saved_model."
+        "model/keras_model.keras, model/saved_model, or model/model.savedmodel."
     )
 
 
@@ -78,8 +79,14 @@ cap = cv2.VideoCapture(0)
 
 while True:
     ret, frame = cap.read()
-    # Resize and normalize for the model
-    image_resized = cv2.resize(frame, (width, height))
+
+    # Convert BGR → RGB
+    image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+    # Resize
+    image_resized = cv2.resize(image_rgb, (width, height))
+
+    # Normalize
     input_data = np.expand_dims(image_resized, axis=0).astype(np.float32)
     input_data = (input_data / 127.5) - 1.0
 
@@ -92,9 +99,12 @@ while True:
     confidence = float(results[top_index]) * 100.0
     label = labels[top_index] if top_index < len(labels) else f"Class {top_index}"
     text = f"{label}: {confidence:.1f}%"
-    cv2.putText(frame, text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
-    
+
+    cv2.putText(frame, text, (10, 30),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+
     cv2.imshow('Dress Code Detector', frame)
+
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
