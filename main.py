@@ -99,9 +99,12 @@ while True:
     confidence = float(results[top_index]) * 100.0
     label = labels[top_index] if top_index < len(labels) else f"Class {top_index}"
     text = f"{label}: {confidence:.1f}%"
+    label_lower = label.lower()
+    is_non_compliant = "non" in label_lower and ("complaince" in label_lower or "compliance" in label_lower)
+    text_color = (0, 0, 255) if is_non_compliant else (0, 255, 0)
 
     cv2.putText(frame, text, (10, 30),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+                cv2.FONT_HERSHEY_SIMPLEX, 0.9, text_color, 2)
 
     cv2.imshow('Dress Code Detector', frame)
 
