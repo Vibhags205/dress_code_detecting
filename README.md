@@ -1,7 +1,5 @@
 #  Dress Code Detector using Computer Vision
 
-An AI-powered real-time Dress Code Detection System that automatically verifies whether students follow institutional dress code using Computer Vision. The system provides instant voice feedback, sends Telegram alerts for violations, generates daily reports, and can optionally control door access using servo motors.
-
 ##  Project Description
 
 The Dress Code Detector is a smart monitoring and access control system built using Raspberry Pi, OpenCV, and YOLOv8 pretrained model. It captures live video using a webcam, detects whether the person follows proper dress code, and performs automated actions such as:
@@ -113,5 +111,6 @@ Voice Feedback  LED Control   Telegram Alert CSV Report
 - Corporate dress monitoring
 - Hostel entry monitoring
 - Secure access systems
+
 
 
