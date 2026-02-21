@@ -5,6 +5,34 @@ os.environ.setdefault("TF_USE_LEGACY_KERAS", "1")
 import cv2
 import numpy as np
 import tensorflow as tf
+import threading
+import time
+
+import pyttsx3
+
+
+VOICE_COOLDOWN_SECONDS = 8
+last_voice_time = 0.0
+
+
+def _init_voice_engine() -> pyttsx3.Engine:
+    engine = pyttsx3.init()
+    engine.setProperty("rate", 175)
+    engine.setProperty("volume", 1.0)
+    return engine
+
+
+voice_engine = _init_voice_engine()
+voice_lock = threading.Lock()
+
+
+def speak_async(message: str) -> None:
+    def task() -> None:
+        with voice_lock:
+            voice_engine.say(message)
+            voice_engine.runAndWait()
+
+    threading.Thread(target=task, daemon=True).start()
 
 
 def load_labels(labels_path: str) -> list[str]:
@@ -105,6 +133,14 @@ while True:
 
     cv2.putText(frame, text, (10, 30),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.9, text_color, 2)
+
+    current_time = time.time()
+    if current_time - last_voice_time >= VOICE_COOLDOWN_SECONDS:
+        last_voice_time = current_time
+        if is_non_compliant:
+            speak_async("Please follow proper dress code")
+        else:
+            speak_async("Thank you, you may enter")
 
     cv2.imshow('Dress Code Detector', frame)
 
