@@ -6,3 +6,5 @@ Date,Time,Detection Type,Status,Confidence (%),Alert Sent
 2026-02-21,22:48:41,Girls non-compliance,Non-Compliance,88.7,Yes
 2026-02-21,22:48:46,Boys compliance,Compliance,97.7,No
 2026-02-21,22:48:54,Girls non-compliance,Non-Compliance,99.6,No
+2026-02-21,23:28:17,Boys compliance,Compliance,99.9,No
+2026-02-21,23:28:27,Boys non-compliance,Non-Compliance,92.9,Yes

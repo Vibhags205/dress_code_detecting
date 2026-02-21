@@ -9,6 +9,10 @@ import threading
 import time
 
 import pyttsx3
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 import cv2
 import numpy as np
@@ -101,8 +105,17 @@ def generate_daily_summary():
 # ==================================================
 
 # ================= TELEGRAM CONFIG =================
-TOKEN = "8300038302:AAFmWafTVDGpHgm5coo3YzmI3VuyMhaMBTY"
-CHANNEL_ID = -1003871574876   # your channel id
+# Load credentials from environment variables
+TOKEN = os.getenv("TELEGRAM_TOKEN")
+CHANNEL_ID = int(os.getenv("TELEGRAM_CHANNEL_ID", "-1"))
+
+if not TOKEN or CHANNEL_ID == -1:
+    raise ValueError(
+        "❌ Telegram credentials not found!\n"
+        "Please create a .env file with TELEGRAM_TOKEN and TELEGRAM_CHANNEL_ID\n"
+        "See .env.example for template."
+    )
+
 ALERT_COOLDOWN = 20
 last_alert_time = 0
 # ==================================================
