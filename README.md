@@ -85,8 +85,6 @@ Please follow proper dress code
 - Micro SD Card
 - Power Supply
 - Monitor (Laptop used)
-- Red LED
-- Green LED
 - Servo Motor
 - Bluetooth Speaker
   
@@ -108,23 +106,6 @@ Voice Feedback  LED Control   Telegram Alert CSV Report
                                  Servo Motor (Optional)
 ```
 
-##  System Output
-
-Compliance:
-
-- Green LED ON
-- Voice: Thank you, you may enter
-- Door opens (optional)
-- CSV updated
-
-Non-compliance:
-
-- Red LED ON
-- Voice: Please follow proper dress code
-- Telegram alert sent
-- Door remains closed
-- CSV updated
-
 ##  Applications
 
 - College entry monitoring
@@ -132,4 +113,5 @@ Non-compliance:
 - Corporate dress monitoring
 - Hostel entry monitoring
 - Secure access systems
+
 
