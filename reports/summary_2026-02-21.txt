@@ -1,0 +1,19 @@
+============================================================
+DAILY DRESS CODE DETECTION SUMMARY - 2026-02-21
+============================================================
+
+Total Detections: 4
+
+BREAKDOWN:
+----------------------------------------
+Girls compliance         :    0 (  0.0%)
+Girls non-compliance     :    2 ( 50.0%)
+Boys compliance          :    2 ( 50.0%)
+Boys non-compliance      :    0 (  0.0%)
+
+COMPLIANCE SUMMARY:
+----------------------------------------
+Compliant:        2 ( 50.0%)
+Non-Compliant:    2 ( 50.0%)
+
+============================================================

@@ -16,6 +16,89 @@ import tensorflow as tf
 import requests
 import time
 from datetime import datetime
+import csv
+from pathlib import Path
+
+# ================= CSV REPORT CONFIG =================
+REPORTS_DIR = "reports"
+Path(REPORTS_DIR).mkdir(exist_ok=True)
+
+# Daily counts tracker
+daily_counts = {
+    "Girls compliance": 0,
+    "Girls non-compliance": 0,
+    "Boys compliance": 0,
+    "Boys non-compliance": 0
+}
+# ==================================================
+
+# -------- CSV REPORT FUNCTIONS --------
+def get_csv_filename():
+    """Get CSV filename for today's date"""
+    today = datetime.now().strftime("%Y-%m-%d")
+    return os.path.join(REPORTS_DIR, f"detections_{today}.csv")
+
+def init_csv_file():
+    """Initialize CSV file with headers if it doesn't exist"""
+    csv_file = get_csv_filename()
+    if not os.path.exists(csv_file):
+        with open(csv_file, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            writer.writerow(['Date', 'Time', 'Detection Type', 'Status', 'Confidence (%)', 'Alert Sent'])
+        print(f"✅ Created new CSV report: {csv_file}")
+    return csv_file
+
+def log_detection_to_csv(label, confidence, alert_sent=False):
+    """Log each detection to CSV file"""
+    csv_file = get_csv_filename()
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    current_time = datetime.now().strftime("%H:%M:%S")
+    
+    # Determine status
+    status = "Non-Compliance" if "non" in label.lower() else "Compliance"
+    
+    # Update daily counts
+    if label in daily_counts:
+        daily_counts[label] += 1
+    
+    # Write to CSV
+    with open(csv_file, 'a', newline='', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        writer.writerow([current_date, current_time, label, status, f"{confidence:.1f}", "Yes" if alert_sent else "No"])
+
+def generate_daily_summary():
+    """Generate daily summary report"""
+    today = datetime.now().strftime("%Y-%m-%d")
+    summary_file = os.path.join(REPORTS_DIR, f"summary_{today}.txt")
+    
+    with open(summary_file, 'w', encoding='utf-8') as f:
+        f.write("="*60 + "\n")
+        f.write(f"DAILY DRESS CODE DETECTION SUMMARY - {today}\n")
+        f.write("="*60 + "\n\n")
+        
+        total = sum(daily_counts.values())
+        f.write(f"Total Detections: {total}\n\n")
+        
+        f.write("BREAKDOWN:\n")
+        f.write("-" * 40 + "\n")
+        for category, count in daily_counts.items():
+            percentage = (count / total * 100) if total > 0 else 0
+            f.write(f"{category:25s}: {count:4d} ({percentage:5.1f}%)\n")
+        
+        f.write("\n")
+        compliance_total = daily_counts.get("Girls compliance", 0) + daily_counts.get("Boys compliance", 0)
+        non_compliance_total = daily_counts.get("Girls non-compliance", 0) + daily_counts.get("Boys non-compliance", 0)
+        
+        f.write("COMPLIANCE SUMMARY:\n")
+        f.write("-" * 40 + "\n")
+        f.write(f"Compliant:     {compliance_total:4d} ({(compliance_total/total*100) if total > 0 else 0:5.1f}%)\n")
+        f.write(f"Non-Compliant: {non_compliance_total:4d} ({(non_compliance_total/total*100) if total > 0 else 0:5.1f}%)\n")
+        f.write("\n" + "="*60 + "\n")
+    
+    print(f"📊 Daily summary saved: {summary_file}")
+    return summary_file
+
+# ==================================================
 
 # ================= TELEGRAM CONFIG =================
 TOKEN = "8300038302:AAFmWafTVDGpHgm5coo3YzmI3VuyMhaMBTY"
@@ -210,6 +293,11 @@ if not telegram_working:
     print("⚠️  Please check your bot token and channel ID")
     input("Press Enter to continue anyway, or Ctrl+C to exit...")
 
+# 2.7. Initialize CSV Report
+print("\n📊 Initializing CSV report system...")
+csv_file = init_csv_file()
+print(f"📁 Detections will be logged to: {csv_file}\n")
+
 # 3. Start Webcam
 cap = cv2.VideoCapture(0)
 
@@ -254,8 +342,12 @@ while True:
             speak_async("Please follow proper dress code")
         else:
             speak_async("Thank you, you may enter")
+        
+        # Log detection to CSV (logs every voice announcement)
+        log_detection_to_csv(label, confidence, alert_sent=False)
     
     # Telegram Alert for non-compliance with high confidence
+    alert_sent = False
     if is_non_compliant and confidence > 80:
         if current_time - last_alert_time > ALERT_COOLDOWN:
             last_alert_time = current_time
@@ -271,6 +363,10 @@ while True:
 
             print(f"Sending telegram alert for {label} with {confidence:.1f}% confidence")
             send_telegram_photo(frame.copy(), caption)
+            alert_sent = True
+            
+            # Log telegram alert to CSV
+            log_detection_to_csv(label, confidence, alert_sent=True)
 
     cv2.imshow('Dress Code Detector', frame)
 
@@ -279,3 +375,8 @@ while True:
 
 cap.release()
 cv2.destroyAllWindows()
+
+# Generate daily summary report
+print("\n📊 Generating daily summary report...")
+generate_daily_summary()
+print("✅ Application closed. All reports saved.")
